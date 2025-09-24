@@ -1,285 +1,297 @@
 # ==============================================================================
-# TÍTULO: MERCADO DE BIENES (CRUZ KEYNESIANA)
+# TÍTULO: MERCADO DE BIENES - Código Interactivo con Widgets
 # ==============================================================================
-"""
-Análisis Interactivo del Mercado de Bienes (Economía Abierta - Modelo IS)
-
-Este script visualiza el modelo de la Cruz Keynesiana para una economía abierta.
-Permite al usuario manipular componentes clave del Gasto Agregado para
-observar su impacto en el Ingreso de Equilibrio de forma interactiva.
-"""
 
 # ------------------------------------------------------------------------------
 # SECCIÓN 1: IMPORTACIÓN DE LIBRERÍAS
 # ------------------------------------------------------------------------------
-# Se importan las librerías necesarias para los cálculos numéricos (numpy),
-# la creación de gráficos (matplotlib) y los componentes interactivos (ipywidgets).
-import numpy as np
-import matplotlib.pyplot as plt
-import ipywidgets as widgets
-from IPython.display import display
+import numpy as np                            # Para cálculos numéricos
+import matplotlib.pyplot as plt               # Para crear gráficos
+import ipywidgets as widgets                  # Para controles interactivos (sliders)
+from IPython.display import display           # Para mostrar la interfaz en Jupyter
 
 # ------------------------------------------------------------------------------
-# SECCIÓN 2: FUNCIÓN PRINCIPAL PARA CREAR LA INTERFAZ
+# SECCIÓN 2: DEFINICIÓN DE LA FUNCIÓN PRINCIPAL
 # ------------------------------------------------------------------------------
-# Se encapsula toda la lógica en una función principal para mantener el código
-# organizado y reutilizable.
-def crear_grafica_mercado_bienes():
+def crear_grafica_mercado_bienes(
+    g0=200,        # Gasto Público inicial
+    t1=0.2,        # Tasa Impositiva inicial
+    i0=150,        # Inversión Autónoma inicial
+    nx0=100        # Exportaciones Netas Autónomas inicial
+):
     """
-    Crea y devuelve una interfaz de usuario interactiva para el modelo
-    del mercado de bienes y servicios en una economía abierta.
-    """
-    # --- 2.1. Creación de Widgets de la Interfaz ---
-    # Aquí se definen todos los elementos interactivos que el usuario verá.
+    Devuelve una interfaz interactiva para el modelo de mercado de bienes (Cruz Keynesiana)
+    permitiendo manipular los parámetros y visualizar la gráfica en tiempo real.
 
-    # 'plot_output' es el lienzo donde se dibujará nuestra gráfica.
+    Parámetros iniciales:
+        g0: Gasto Público
+        t1: Tasa Impositiva
+        i0: Inversión Autónoma
+        nx0: Exportaciones Netas Autónomas
+    """
+
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.1: CREACIÓN DE LOS SLIDERS (widgets.FloatSlider)
+    # --------------------------------------------------------------------------
+    slider_layout = widgets.Layout(width='80%')  # Establece ancho de los sliders
+
+    # Slider para el Gasto Público
+    gasto_slider = widgets.FloatSlider(
+        value=g0, min=100, max=300, step=10,
+        description="Gasto Público (g₀)", layout=slider_layout, readout_format='.0f'
+    )
+    # Slider para la Tasa Impositiva
+    tasa_slider = widgets.FloatSlider(
+        value=t1, min=0.1, max=0.5, step=0.05,
+        description="Tasa Impositiva (t₁)", layout=slider_layout, readout_format='.2f'
+    )
+    # Slider para la Inversión Autónoma
+    inversion_slider = widgets.FloatSlider(
+        value=i0, min=50, max=250, step=10,
+        description="Inversión Autónoma (i₀)", layout=slider_layout, readout_format='.0f'
+    )
+    # Slider para Exportaciones Netas Autónomas
+    nx_slider = widgets.FloatSlider(
+        value=nx0, min=-50, max=200, step=10,
+        description="Exp. Netas Autónomas (nx₀)", layout=slider_layout, readout_format='.0f'
+    )
+
+    # Widget de salida para mostrar la gráfica
     plot_output = widgets.Output()
 
-    # Layout para estandarizar el ancho de los sliders.
-    slider_layout = widgets.Layout(width='80%')
-
-    # Creación de etiquetas y sliders para cada parámetro del modelo.
-    # Cada slider controla una variable económica.
-    gasto_label = widgets.Label("Gasto Público (g0):")
-    gasto_slider = widgets.FloatSlider(value=200, min=100, max=300, step=10, layout=slider_layout, readout_format='.0f')
-
-    tasa_label = widgets.Label("Tasa Impositiva (t1):")
-    tasa_slider = widgets.FloatSlider(value=0.2, min=0.1, max=0.5, step=0.05, layout=slider_layout, readout_format='.2f')
-
-    inversion_label = widgets.Label("Inversión Autónoma (i0):")
-    inversion_slider = widgets.FloatSlider(value=150, min=50, max=250, step=10, layout=slider_layout, readout_format='.0f')
-
-    nx_label = widgets.Label("Export. Netas Autónomas (nx0):")
-    nx_slider = widgets.FloatSlider(value=100, min=-50, max=200, step=10, layout=slider_layout, readout_format='.0f')
-
-    # --- 2.2. Función de Dibujo de la Gráfica ---
-    # Esta función contiene la lógica económica y de visualización.
-    # Se ejecuta cada vez que un slider cambia de valor.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.2: FUNCIÓN PARA DIBUJAR LA GRÁFICA ECONÓMICA
+    # --------------------------------------------------------------------------
     def dibujar_grafica(g0, t1, i0, nx0):
-        # El bloque 'with' asegura que la gráfica se dibuje en el widget 'plot_output'.
         with plot_output:
-            # Limpia la gráfica anterior para evitar superposiciones al actualizar.
-            plot_output.clear_output(wait=True)
+            plot_output.clear_output(wait=True)  # Limpia la gráfica anterior
 
-            # Parámetros fijos del modelo.
-            c0 = 50   # Consumo autónomo (asumido)
-            c1 = 0.6  # Propensión Marginal a Consumir
+            # Parámetros fijos del modelo
+            c0 = 50    # Consumo autónomo
+            c1 = 0.6   # Propensión marginal a consumir
 
-            # --- Subsección 2.2.1: Cálculos del Modelo Económico ---
-            # 'alpha' es el multiplicador keynesiano.
-            alpha = 1 / (1 - c1 * (1 - t1))
-            # 'A' es la suma de todos los componentes autónomos del gasto.
-            A = c0 + i0 + g0 + nx0
-            # 'Y_eq' es el ingreso de equilibrio, donde la producción iguala al gasto.
-            Y_eq = alpha * A
+            # --- Cálculos económicos ---
+            alpha = 1 / (1 - c1 * (1 - t1))          # Multiplicador Keynesiano
+            A = c0 + i0 + g0 + nx0                   # Suma de componentes autónomos
+            Y_eq = alpha * A                         # Ingreso de equilibrio
 
-            # --- Subsección 2.2.2: Creación de la Gráfica con Matplotlib ---
-            fig, ax = plt.subplots(figsize=(10, 7))
-            
-            # MODIFICACIÓN: Se define un rango FIJO para los ejes.
-            Y_MAX_FIJO = 2500
+            # --- Preparación de datos para la gráfica ---
+            Y_MAX_FIJO = 2500                        # Rango fijo para los ejes
             Y_range = np.linspace(0, Y_MAX_FIJO, 100)
-            
-            # 'DA' es la función de Gasto Agregado (Demanda Agregada).
-            DA = A + c1 * (1 - t1) * Y_range
-            
-            # Dibujar la línea de 45 grados (condición de equilibrio Y = DA).
-            ax.plot(Y_range, Y_range, color='black', linestyle='--', alpha=0.7, label='Y = DA (Condición de Equilibrio)')
-            # Dibujar la curva de Gasto Agregado.
-            ax.plot(Y_range, DA, color='deepskyblue', linewidth=3, label='Gasto Agregado (DA)')
-            # Marcar el punto de equilibrio en la gráfica.
-            ax.plot(Y_eq, Y_eq, 'o', color='red', markersize=10, label=f'Punto de Equilibrio (Y={Y_eq:.1f})')
-            # Añadir líneas de guía punteadas desde el equilibrio hacia los ejes.
-            ax.vlines(Y_eq, 0, Y_eq, color='red', linestyle=':', alpha=0.8)
-            ax.hlines(Y_eq, 0, Y_eq, color='red', linestyle=':', alpha=0.8)
+            DA = A + c1 * (1 - t1) * Y_range         # Gasto Agregado (DA)
 
-            # --- Subsección 2.2.3: Estilo y Formato de la Gráfica ---
-            ax.set_title(f"Multiplicador: {alpha:.2f} | Ingreso de Equilibrio: {Y_eq:.1f}", fontsize=16)
+            # --- Creación de la gráfica ---
+            fig, ax = plt.subplots(figsize=(9, 6))
+            ax.plot(Y_range, Y_range, '--', color='gray', label='Y = DA (Equilibrio)')
+            ax.plot(Y_range, DA, '-', color='deepskyblue', linewidth=2.5, label='Gasto Agregado (DA)')
+            ax.plot(Y_eq, Y_eq, 'o', color='red', markersize=10, label=f'Equilibrio: Y={Y_eq:.1f}')
+            ax.vlines(Y_eq, 0, Y_eq, color='red', linestyle=':', alpha=0.7)
+            ax.hlines(Y_eq, 0, Y_eq, color='red', linestyle=':', alpha=0.7)
+
+            # --- Estilización y anotaciones ---
+            ax.set_title(f"Multiplicador: {alpha:.2f} | Ingreso de Equilibrio: {Y_eq:.1f}", fontsize=14)
             ax.set_xlabel("Ingreso / Producción (Y)", fontsize=12)
             ax.set_ylabel("Gasto Agregado (DA)", fontsize=12)
-            ax.grid(True, linestyle=':', alpha=0.6)
-            ax.legend(loc="upper left")
-            
-            # MODIFICACIÓN: Se establecen límites fijos para los ejes X e Y.
-            ax.set_xlim(left=0, right=Y_MAX_FIJO)
-            ax.set_ylim(bottom=0, top=Y_MAX_FIJO)
+            ax.set_xlim(0, Y_MAX_FIJO)
+            ax.set_ylim(0, Y_MAX_FIJO)
+            ax.grid(True, linestyle=':', alpha=0.5)
+            ax.legend(loc='upper left')
+            plt.tight_layout()
+            plt.show()
 
-            plt.tight_layout() # Ajusta el layout para que no se corten las etiquetas.
-            plt.show()         # Muestra la gráfica en el output.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.3: FUNCIÓN DE ACTUALIZACIÓN DE LA GRÁFICA
+    # --------------------------------------------------------------------------
+    def actualizar_grafica(change=None):
+        """
+        Toma los valores actuales de los sliders y actualiza la gráfica.
+        Se ejecuta al mover cualquier slider.
+        """
+        dibujar_grafica(
+            gasto_slider.value,
+            tasa_slider.value,
+            inversion_slider.value,
+            nx_slider.value
+        )
 
-    # --- 2.3. Lógica de Interacción (Observadores) ---
-    # Esta sección conecta los sliders con la función de dibujo.
-    def on_value_change(change):
-        # Llama a la función de dibujo con los valores actuales de todos los sliders.
-        dibujar_grafica(gasto_slider.value, tasa_slider.value, inversion_slider.value, nx_slider.value)
-
-    # Se "observa" cada slider; si su 'value' cambia, se llama a la función 'on_value_change'.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.4: CONEXIÓN DE SLIDERS Y FUNCIÓN DE DIBUJO
+    # --------------------------------------------------------------------------
+    # Se conecta cada slider para que, al cambiar, se actualice la gráfica automáticamente
     for slider in [gasto_slider, tasa_slider, inversion_slider, nx_slider]:
-        slider.observe(on_value_change, names='value')
-    
-    # --- 2.4. Organización y Visualización de la Interfaz de Usuario (UI) ---
-    # Se agrupan los widgets de forma ordenada para presentarlos al usuario.
-    
-    # Se crea una caja vertical para los controles.
-    controles = widgets.VBox([
-        widgets.VBox([gasto_label, gasto_slider]),
-        widgets.VBox([tasa_label, tasa_slider]),
-        widgets.VBox([inversion_label, inversion_slider]),
-        widgets.VBox([nx_label, nx_slider])
-    ], layout=widgets.Layout(width='400px'))
-    
-    # Se combinan los controles (izquierda) y la gráfica (derecha) en una caja horizontal.
+        slider.observe(actualizar_grafica, names='value')
+
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.5: ORGANIZACIÓN DE LA INTERFAZ GRÁFICA
+    # --------------------------------------------------------------------------
+    # Se agrupan los sliders (controles) en una caja vertical
+    controles = widgets.VBox(
+        [gasto_slider, tasa_slider, inversion_slider, nx_slider],
+        layout=widgets.Layout(width='350px')
+    )
+    # Se agrupan los controles y la gráfica en una caja horizontal
     ui = widgets.HBox([controles, plot_output], layout=widgets.Layout(align_items='center'))
-    
-    # --- 2.5. Llamada Inicial para Dibujar la Gráfica ---
-    # Se llama a la función una vez al principio para que la gráfica aparezca
-    # con los valores iniciales de los sliders.
-    on_value_change(None)
-    
-    # Finalmente, la función devuelve la interfaz completa.
+
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.6: DIBUJO INICIAL DE LA GRÁFICA
+    # --------------------------------------------------------------------------
+    actualizar_grafica()  # Muestra la gráfica con los valores iniciales
+
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 2.7: RETORNO DE LA INTERFAZ COMPLETA
+    # --------------------------------------------------------------------------
     return ui
 
 # ------------------------------------------------------------------------------
-# SECCIÓN 3: EJECUCIÓN Y VISUALIZACIÓN
+# SECCIÓN 3: EJECUCIÓN DEL CÓDIGO EN EL CUADERNO
 # ------------------------------------------------------------------------------
-# Para mostrar la interfaz interactiva en el cuaderno de Jupyter,
-# simplemente llamamos a la función principal.
+# Ejemplo de uso: muestra la interfaz interactiva con valores iniciales personalizados
 display(crear_grafica_mercado_bienes())
 
+
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
 
 
 # ==============================================================================
-# TÍTULO: MERCADO DE DINERO
+# TÍTULO: MERCADO DE DINERO (MODELO LM) 
 # ==============================================================================
-"""
-Análisis Interactivo del Mercado de Dinero (Modelo LM)
 
-Este script visualiza el modelo de equilibrio en el mercado monetario.
-Permite al usuario manipular la oferta monetaria, el nivel de ingreso y
-el nivel de precios para observar su impacto en la tasa de interés de equilibrio.
-"""
 # ------------------------------------------------------------------------------
-# SECCIÓN 2: FUNCIÓN PRINCIPAL PARA CREAR LA INTERFAZ
+# SECCIÓN 1: DEFINICIÓN DE LA FUNCIÓN PRINCIPAL
 # ------------------------------------------------------------------------------
-# Se encapsula toda la lógica en una función principal para mantener el código
-# organizado y reutilizable.
-def crear_grafica_mercado_dinero():
+def crear_grafica_mercado_dinero(
+    Ms=150,       # Oferta Monetaria inicial
+    Y=800,        # Nivel de Ingreso inicial
+    P=1           # Nivel de Precios inicial
+):
     """
-    Crea y devuelve una interfaz de usuario interactiva para el modelo
-    del mercado de dinero.
-    """
-    # --- 2.1. Creación de Widgets de la Interfaz ---
-    # Aquí se definen todos los elementos interactivos que el usuario verá.
+    Devuelve una interfaz interactiva para el modelo de mercado de dinero (Modelo LM)
+    permitiendo manipular los parámetros y visualizar la gráfica en tiempo real.
 
-    # 'plot_output' es el lienzo donde se dibujará nuestra gráfica.
+    Parámetros iniciales:
+        Ms: Oferta Monetaria
+        Y: Nivel de Ingreso
+        P: Nivel de Precios
+    """
+
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.1: CREACIÓN DE LOS SLIDERS (widgets.FloatSlider)
+    # --------------------------------------------------------------------------
+    slider_layout = widgets.Layout(width='80%')  # Establece ancho de los sliders
+
+    # Slider para Oferta Monetaria
+    oferta_slider = widgets.FloatSlider(
+        value=Ms, min=50, max=250, step=10,
+        description="Oferta Monetaria (Ms)", layout=slider_layout, readout_format='.0f'
+    )
+    # Slider para Nivel de Ingreso
+    ingreso_slider = widgets.FloatSlider(
+        value=Y, min=500, max=1500, step=25,
+        description="Nivel de Ingreso (Y)", layout=slider_layout, readout_format='.0f'
+    )
+    # Slider para Nivel de Precios
+    precio_slider = widgets.FloatSlider(
+        value=P, min=0.5, max=2, step=0.1,
+        description="Nivel de Precios (P)", layout=slider_layout, readout_format='.1f'
+    )
+
+    # Widget de salida para mostrar la gráfica
     plot_output = widgets.Output()
 
-    # Layout para estandarizar el ancho de los sliders.
-    slider_layout = widgets.Layout(width='80%')
-
-    # Creación de etiquetas y sliders para cada parámetro del modelo.
-    oferta_label = widgets.Label("Oferta Monetaria (Ms):")
-    oferta_slider = widgets.FloatSlider(value=150, min=50, max=250, step=10, layout=slider_layout, readout_format='.0f')
-
-    ingreso_label = widgets.Label("Nivel de Ingreso (Y):")
-    ingreso_slider = widgets.FloatSlider(value=800, min=500, max=1500, step=25, layout=slider_layout, readout_format='.0f')
-    
-    precio_label = widgets.Label("Nivel de Precios (P):")
-    precio_slider = widgets.FloatSlider(value=1, min=0.5, max=2, step=0.1, layout=slider_layout, readout_format='.1f')
-
-    # --- 2.2. Función de Dibujo de la Gráfica ---
-    # Esta función contiene la lógica económica y de visualización.
-    # Se ejecuta cada vez que un slider cambia de valor.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.2: FUNCIÓN PARA DIBUJAR LA GRÁFICA ECONÓMICA
+    # --------------------------------------------------------------------------
     def dibujar_grafica(Ms, Y, P):
-        # El bloque 'with' asegura que la gráfica se dibuje en el widget 'plot_output'.
         with plot_output:
-            # Limpia la gráfica anterior para evitar superposiciones al actualizar.
-            plot_output.clear_output(wait=True)
+            plot_output.clear_output(wait=True)  # Limpia la gráfica anterior
 
             # Parámetros fijos del modelo de demanda de dinero: L = kY - hi
             k = 0.5   # Sensibilidad de la demanda de dinero al ingreso
             h = 10    # Sensibilidad de la demanda de dinero a la tasa de interés
 
-            # --- Subsección 2.2.1: Cálculos del Modelo Económico ---
-            # La oferta real de dinero es la oferta nominal (Ms) dividida por el nivel de precios (P).
-            Ms_real = Ms / P
-            # Se despeja 'i' de la condición de equilibrio Ms/P = kY - hi.
-            i_eq = (k * Y - Ms_real) / h
+            # --- Cálculos económicos ---
+            Ms_real = Ms / P                             # Oferta real de dinero
+            i_eq = (k * Y - Ms_real) / h                 # Tasa de interés de equilibrio
 
-            # --- Subsección 2.2.2: Creación de la Gráfica con Matplotlib ---
-            fig, ax = plt.subplots(figsize=(10, 7))
-            
-            # Se definen rangos FIJOS para los ejes para una visualización estable.
-            I_MAX_FIJO = 50
-            M_MAX_FIJO = 500
-            i_range = np.linspace(0, I_MAX_FIJO, 100)
-            
-            # Se calcula la Demanda de Dinero (Md) para cada nivel de 'i'.
-            Md = k * Y - h * i_range
-            
-            # Dibujar la curva de Demanda de Dinero (Md).
-            ax.plot(Md, i_range, color='orange', linewidth=3, label=f'Demanda de Dinero (Md)')
-            # Dibujar la línea vertical de Oferta Real de Dinero (Ms/P).
+            # --- Preparación de datos para la gráfica ---
+            I_MAX_FIJO = 50                              # Rango fijo para tasa de interés
+            M_MAX_FIJO = 500                             # Rango fijo para cantidad de dinero real
+            i_range = np.linspace(0, I_MAX_FIJO, 100)    # Eje de tasas de interés
+            Md = k * Y - h * i_range                     # Demanda de dinero (Md)
+
+            # --- Creación de la gráfica ---
+            fig, ax = plt.subplots(figsize=(9, 6))
+            ax.plot(Md, i_range, '-', color='orange', linewidth=2.5, label='Demanda de Dinero (Md)')
             ax.axvline(x=Ms_real, color='skyblue', linewidth=3, linestyle='-', label='Oferta Real (Ms/P)')
-            # Marcar el punto de equilibrio.
-            ax.plot(Ms_real, i_eq, 'o', color='black', markersize=10, label=f'Equilibrio (i={i_eq:.2f})')
-            # Añadir línea de guía horizontal desde el equilibrio.
+            ax.plot(Ms_real, i_eq, 'o', color='black', markersize=10, label=f'Equilibrio: i={i_eq:.2f}')
             ax.hlines(i_eq, 0, Ms_real, color='black', linestyle=':', alpha=0.8)
 
-            # --- Subsección 2.2.3: Estilo y Formato de la Gráfica ---
-            ax.set_title(f"Tasa de Interés de Equilibrio: {i_eq:.2f}%", fontsize=16)
+            # --- Estilización y anotaciones ---
+            ax.set_title(f"Tasa de Interés de Equilibrio: {i_eq:.2f}%", fontsize=14)
             ax.set_xlabel("Cantidad Real de Dinero (M/P)", fontsize=12)
             ax.set_ylabel("Tasa de Interés (i)", fontsize=12)
-            ax.grid(True, linestyle=':', alpha=0.6)
-            ax.legend(loc="upper right")
-            
-            # Se establecen límites fijos para los ejes.
-            ax.set_xlim(left=0, right=M_MAX_FIJO)
-            ax.set_ylim(bottom=0, top=I_MAX_FIJO)
-
+            ax.set_xlim(0, M_MAX_FIJO)
+            ax.set_ylim(0, I_MAX_FIJO)
+            ax.grid(True, linestyle=':', alpha=0.5)
+            ax.legend(loc='upper right')
             plt.tight_layout()
             plt.show()
 
-    # --- 2.3. Lógica de Interacción (Observadores) ---
-    # Esta sección conecta los sliders con la función de dibujo.
-    def on_value_change(change):
-        # Llama a la función de dibujo con los valores actuales de todos los sliders.
-        dibujar_grafica(oferta_slider.value, ingreso_slider.value, precio_slider.value)
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.3: FUNCIÓN DE ACTUALIZACIÓN DE LA GRÁFICA
+    # --------------------------------------------------------------------------
+    def actualizar_grafica(change=None):
+        """
+        Toma los valores actuales de los sliders y actualiza la gráfica.
+        Se ejecuta al mover cualquier slider.
+        """
+        dibujar_grafica(
+            oferta_slider.value,
+            ingreso_slider.value,
+            precio_slider.value
+        )
 
-    # Se "observa" cada slider; si su 'value' cambia, se llama a 'on_value_change'.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.4: CONEXIÓN DE SLIDERS Y FUNCIÓN DE DIBUJO
+    # --------------------------------------------------------------------------
+    # Se conecta cada slider para que, al cambiar, se actualice la gráfica automáticamente
     for slider in [oferta_slider, ingreso_slider, precio_slider]:
-        slider.observe(on_value_change, names='value')
+        slider.observe(actualizar_grafica, names='value')
 
-    # --- 2.4. Organización y Visualización de la Interfaz de Usuario (UI) ---
-    # Se agrupan los widgets de forma ordenada para presentarlos al usuario.
-    
-    # Se crea una caja vertical para los controles.
-    controles = widgets.VBox([
-        widgets.VBox([oferta_label, oferta_slider]),
-        widgets.VBox([ingreso_label, ingreso_slider]),
-        widgets.VBox([precio_label, precio_slider])
-    ], layout=widgets.Layout(width='400px'))
-    
-    # Se combinan los controles (izquierda) y la gráfica (derecha) en una caja horizontal.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.5: ORGANIZACIÓN DE LA INTERFAZ GRÁFICA
+    # --------------------------------------------------------------------------
+    # Se agrupan los sliders (controles) en una caja vertical
+    controles = widgets.VBox(
+        [oferta_slider, ingreso_slider, precio_slider],
+        layout=widgets.Layout(width='350px')
+    )
+    # Se agrupan los controles y la gráfica en una caja horizontal
     ui = widgets.HBox([controles, plot_output], layout=widgets.Layout(align_items='center'))
 
-    # --- 2.5. Llamada Inicial para Dibujar la Gráfica ---
-    # Se llama a la función una vez al principio para que la gráfica aparezca
-    # con los valores iniciales de los sliders.
-    on_value_change(None)
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.6: DIBUJO INICIAL DE LA GRÁFICA
+    # --------------------------------------------------------------------------
+    actualizar_grafica()  # Muestra la gráfica con los valores iniciales
 
-    # Finalmente, la función devuelve la interfaz completa.
+    # --------------------------------------------------------------------------
+    # SUBSECCIÓN 1.7: RETORNO DE LA INTERFAZ COMPLETA
+    # --------------------------------------------------------------------------
     return ui
 
 # ------------------------------------------------------------------------------
-# SECCIÓN 3: EJECUCIÓN Y VISUALIZACIÓN
+# SECCIÓN 2: EJECUCIÓN DEL CÓDIGO EN EL CUADERNO
 # ------------------------------------------------------------------------------
-# Para mostrar la interfaz interactiva en el cuaderno de Jupyter,
-# simplemente llamamos a la función principal.
-display(crear_grafica_mercado_dinero())
+# Ejemplo de uso: muestra la interfaz interactiva con valores iniciales personalizados
+display(crear_grafica_mercado_dinero(150, 800, 1))
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
 
 
 # ==============================================================================
