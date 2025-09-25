@@ -65,3 +65,93 @@ El presente proyecto tiene como objetivo que el estudiante conozca nuevos paquet
   - No entender el código brindado por los chatbots (uso ciego).
   - No entender la organización del código porque todo fue elaborado por el chatbot.
 
+
+
+
+
+
+
+
+
+
+
+
+  # 📈 Simulador Interactivo de Modelos Macroeconómicos de Economía Abierta
+
+Este proyecto es una herramienta educativa interactiva, desarrollada en un Jupyter Notebook, que visualiza los modelos macroeconómicos clave para una economía abierta: el **Modelo Mundell-Fleming** y el **Modelo DD-AA** de Krugman.
+
+El objetivo es permitir a estudiantes y entusiastas de la economía explorar de manera dinámica cómo las políticas fiscales y monetarias afectan la renta, el tipo de cambio y otras variables económicas.
+
+
+
+---
+
+## 📚 Modelos Incluidos
+
+El cuaderno `EconDynamics.ipynb` presenta una secuencia lógica de modelos que construyen la intuición de la macroeconomía abierta:
+
+1.  **Mercado de Bienes (Cruz Keynesiana):** Visualización del equilibrio entre el gasto agregado y la producción.
+2.  **Mercado de Dinero (Modelo LM):** Equilibrio entre la oferta y la demanda de dinero para determinar la tasa de interés.
+3.  **Mercado de Divisas (Paridad de Intereses):** Muestra cómo se determina el tipo de cambio spot a través de los rendimientos de los activos nacionales y extranjeros.
+4.  **Modelo DD-AA (Equilibrio General):** El modelo central que combina el equilibrio del mercado de bienes (curva DD) y el mercado de activos (curva AA) para encontrar simultáneamente la renta y el tipo de cambio de equilibrio.
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+* **Python 3.x**
+* **Jupyter Notebook:** Para la presentación interactiva de la teoría y las visualizaciones.
+* **Matplotlib:** Para la creación de las gráficas estáticas y dinámicas.
+* **ipympl (Jupyter Matplotlib):** Para mejorar la interactividad de los gráficos en el notebook.
+* **ipywidgets:** Para la creación de los sliders y controles interactivos.
+* **NumPy:** Para los cálculos numéricos y la manipulación de arreglos.
+
+---
+
+# 📈 Simulador Interactivo de Macroeconomía Abierta
+
+Este proyecto es una herramienta de aprendizaje visual diseñada para desmitificar los modelos teóricos de la macroeconomía de economía abierta. A través de un Jupyter Notebook interactivo, los conceptos abstractos del **Modelo Mundell-Fleming** y el **Modelo DD-AA** de Paul Krugman cobran vida, permitiendo a los usuarios ver de forma tangible cómo las decisiones de política económica impactan a una nación en el escenario global.
+
+El objetivo principal es transformar las complejas interacciones entre tasas de interés, tipos de cambio y renta nacional en una experiencia intuitiva y exploratoria.
+
+
+
+---
+
+##  Propósito:
+
+Este simulador fue creado como un puente entre la comunidad que se dedica a la investigación. Está dirigido a:
+
+* **Investigadores:** Que buscan nuevas formas de publicar sus hallazgos.
+* **Entusiastas y Autodidactas:** Interesados en explorar las mecánicas de la economía internacional sin necesidad de complejos modelos matemáticos.
+* **Instructores y Profesores:** Que pueden utilizar esta herramienta como un recurso dinámico en sus clases para demostrar los efectos de distintos shocks económicos.
+
+---
+
+##  Los Modelos: Una introducción
+
+El cuaderno está estructurado como un recorrido lógico, donde cada modelo construye sobre el anterior para pintar un cuadro completo de la economía abierta según el libro de Paul Krugman. 
+
+### 1. El Mercado de Bienes (La Cruz Keynesiana)
+Esta visualización muestra la relación fundamental entre el **gasto total** (consumo, inversión, gasto público y exportaciones netas) y el **ingreso nacional (Y)**. Permite explorar el concepto del **multiplicador keynesiano**, observando cómo un cambio inicial en el gasto genera un impacto amplificado en la producción total de equilibrio.
+
+### 2. El Mercado de Dinero (Equilibrio LM)
+Este modelo se adentra en el sector financiero, mostrando cómo se determina la **tasa de interés (i)**. La gráfica representa el equilibrio entre la **oferta de dinero**, controlada por el banco central, y la **demanda de dinero** por parte del público. Al manipular la oferta monetaria o el nivel de ingreso, se puede observar directamente cómo estas acciones presionan al alza o a la baja la tasa de interés de equilibrio, el "precio" del dinero.
+
+### 3. El Mercado de Divisas (La Paridad de Intereses)
+Este gráfico es crucial, pues visualiza la **condición de paridad de intereses**, el mecanismo que determina el **tipo de cambio (E)**. Muestra que el tipo de cambio se ajusta hasta que el rendimiento esperado de los depósitos en moneda nacional es igual al de los depósitos en moneda extranjera. Es el eslabón que une las decisiones de política monetaria interna con el valor internacional de la moneda.
+
+ ### 4. El Modelo DD-AA (El Equilibrio General)
+Este es el modelo culminante del proyecto. Integra los tres mercados anteriores en una sola visualización para determinar simultáneamente el **ingreso de equilibrio (Y)** y el **tipo de cambio de equilibrio (E)**.
+* La **Curva DD** representa todos los puntos de equilibrio del mercado de bienes.
+* La **Curva AA** representa todos los puntos de equilibrio del mercado de activos (dinero y divisas).
+
+La intersección de ambas curvas muestra el equilibrio macroeconómico general. Moviendo los sliders, se pueden simular políticas fiscales o monetarias y observar el poderoso resultado final: cómo estas políticas afectan tanto la producción interna como la posición del país en el escenario internacional.
+
+---
+
+##  Requisitos para su Uso
+
+Para ejecutar el proyecto, se requiere necesitas un entorno de Python con Jupyter Notebook y las siguientes librerías instaladas: `matplotlib`, `ipywidgets`, `numpy` y `ipympl`.
+
+Una vez instalado el entorno, simplemente inicia Jupyter y abre el archivo `EconDynamics.ipynb`. Al ejecutar las celdas, podrás interactuar con cada uno de los modelos económicos descritos.
