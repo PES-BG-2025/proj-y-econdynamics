@@ -69,6 +69,13 @@ El presente proyecto tiene como objetivo que el estudiante conozca nuevos paquet
 
 
 
+
+
+
+
+
+
+
   # 📈 Simulador Interactivo de Modelos Macroeconómicos de Economía Abierta
 
 Este proyecto es una herramienta educativa interactiva, desarrollada en un Jupyter Notebook, que visualiza los modelos macroeconómicos clave para una economía abierta: el **Modelo Mundell-Fleming** y el **Modelo DD-AA** de Krugman.
@@ -79,7 +86,7 @@ El objetivo es permitir a estudiantes y entusiastas de la economía explorar de 
 
 ---
 
-## ## 📚 Modelos Incluidos
+## 📚 Modelos Incluidos
 
 El cuaderno `EconDynamics.ipynb` presenta una secuencia lógica de modelos que construyen la intuición de la macroeconomía abierta:
 
@@ -90,7 +97,7 @@ El cuaderno `EconDynamics.ipynb` presenta una secuencia lógica de modelos que c
 
 ---
 
-## ## 🛠️ Tecnologías Utilizadas
+## 🛠️ Tecnologías Utilizadas
 
 * **Python 3.x**
 * **Jupyter Notebook:** Para la presentación interactiva de la teoría y las visualizaciones.
@@ -111,7 +118,7 @@ El objetivo principal es transformar las complejas interacciones entre tasas de 
 
 ---
 
-## ##  Propósito:
+##  Propósito:
 
 Este simulador fue creado como un puente entre la comunidad que se dedica a la investigación. Está dirigido a:
 
@@ -121,20 +128,20 @@ Este simulador fue creado como un puente entre la comunidad que se dedica a la i
 
 ---
 
-## ##  Los Modelos: Una introducción
+##  Los Modelos: Una introducción
 
 El cuaderno está estructurado como un recorrido lógico, donde cada modelo construye sobre el anterior para pintar un cuadro completo de la economía abierta según el libro de Paul Krugman. 
 
-### ### 1. El Mercado de Bienes (La Cruz Keynesiana)
+### 1. El Mercado de Bienes (La Cruz Keynesiana)
 Esta visualización muestra la relación fundamental entre el **gasto total** (consumo, inversión, gasto público y exportaciones netas) y el **ingreso nacional (Y)**. Permite explorar el concepto del **multiplicador keynesiano**, observando cómo un cambio inicial en el gasto genera un impacto amplificado en la producción total de equilibrio.
 
-### ### 2. El Mercado de Dinero (Equilibrio LM)
+### 2. El Mercado de Dinero (Equilibrio LM)
 Este modelo se adentra en el sector financiero, mostrando cómo se determina la **tasa de interés (i)**. La gráfica representa el equilibrio entre la **oferta de dinero**, controlada por el banco central, y la **demanda de dinero** por parte del público. Al manipular la oferta monetaria o el nivel de ingreso, se puede observar directamente cómo estas acciones presionan al alza o a la baja la tasa de interés de equilibrio, el "precio" del dinero.
 
-### ### 3. El Mercado de Divisas (La Paridad de Intereses)
+### 3. El Mercado de Divisas (La Paridad de Intereses)
 Este gráfico es crucial, pues visualiza la **condición de paridad de intereses**, el mecanismo que determina el **tipo de cambio (E)**. Muestra que el tipo de cambio se ajusta hasta que el rendimiento esperado de los depósitos en moneda nacional es igual al de los depósitos en moneda extranjera. Es el eslabón que une las decisiones de política monetaria interna con el valor internacional de la moneda.
 
-### ### 4. El Modelo DD-AA (El Equilibrio General)
+ ### 4. El Modelo DD-AA (El Equilibrio General)
 Este es el modelo culminante del proyecto. Integra los tres mercados anteriores en una sola visualización para determinar simultáneamente el **ingreso de equilibrio (Y)** y el **tipo de cambio de equilibrio (E)**.
 * La **Curva DD** representa todos los puntos de equilibrio del mercado de bienes.
 * La **Curva AA** representa todos los puntos de equilibrio del mercado de activos (dinero y divisas).
@@ -143,7 +150,7 @@ La intersección de ambas curvas muestra el equilibrio macroeconómico general. 
 
 ---
 
-## ##  Requisitos para su Uso
+##  Requisitos para su Uso
 
 Para ejecutar el proyecto, se requiere necesitas un entorno de Python con Jupyter Notebook y las siguientes librerías instaladas: `matplotlib`, `ipywidgets`, `numpy` y `ipympl`.
 
