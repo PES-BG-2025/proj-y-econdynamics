@@ -401,7 +401,7 @@ def crear_grafica_mercado_divisas(
 
 
 # ==============================================================================
-# TÍTULO: Dashboard Interactivo del Modelo IS-LM
+# TÍTULO: Modelo IS-LM
 # ==============================================================================
 """
 Modelo IS-LM interactivo.
@@ -555,3 +555,175 @@ def dashboard_is_lm():
     # --------------------------------------------------------------------------
     ui = widgets.HBox([all_sliders, interactive_plot])
     display(ui)
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+
+# ==============================================================================
+# TÍTULO: Modelo Mundell-Fleming (DD-AA)
+# ==============================================================================
+"""
+
+"""
+# ------------------------------------------------------------------------------
+# SECCIÓN 1: FUNCIÓN PRINCIPAL DE GRAFICACIÓN
+# ------------------------------------------------------------------------------
+def graficar_mundell_fleming(
+    c0, c1, T, I0, nx0, nx2, G0, M0, P, k, h, R_star,
+    shock_monetario, shock_fiscal,
+    Y_obj=300, E_obj=8
+):
+    """
+    Grafica el modelo Mundell-Fleming (DD-AA) mostrando el equilibrio inicial y el desplazamiento por shocks.
+
+    Parámetros:
+        c0, c1: Consumo autónomo y propensión marginal a consumir
+        T: Impuestos
+        I0: Inversión autónoma
+        nx0, nx2: Exportaciones netas autónomas y sensibilidad NX a Y
+        G0: Gasto público inicial
+        M0: Oferta monetaria inicial
+        P: Nivel de precios
+        k, h: Parámetros de demanda de dinero
+        R_star: Tasa internacional
+        shock_monetario: Cambio en oferta monetaria
+        shock_fiscal: Cambio en gasto público
+        Y_obj, E_obj: Equilibrio objetivo inicial (por defecto: 300, 8)
+    """
+
+    # -----------------------------------------------------------
+    # 1.1. Cálculo de parámetros para forzar equilibrio en (Y_obj, E_obj)
+    # -----------------------------------------------------------
+    # Calcula Ee y nx1 para que el equilibrio inicial se cumpla
+    AA_term = 1 + R_star - (k * Y_obj - M0 / P) / h
+    Ee = E_obj / AA_term if AA_term != 0 else 1
+    DD_num = Y_obj * (1 + nx2 - c1) - (c0 - c1 * T + I0 + G0 + nx0)
+    nx1 = DD_num / E_obj
+
+    # -----------------------------------------------------------
+    # 1.2. Definición de las funciones DD y AA
+    # -----------------------------------------------------------
+    def DD(E, G): 
+        """Curva DD: Equilibrio en el mercado de bienes"""
+        return (c0 - c1*T + I0 + G + nx0 + nx1*E) / (1 - c1 + nx2)
+
+    def AA(Y, M): 
+        """Curva AA: Equilibrio en el mercado de activos"""
+        return Ee * (1 + R_star - (k*Y - M/P)/h)
+
+    # -----------------------------------------------------------
+    # 1.3. Equilibrio inicial (sin shocks)
+    # -----------------------------------------------------------
+    Y_eq0 = Y_obj
+    E_eq0 = E_obj
+
+    # -----------------------------------------------------------
+    # 1.4. Equilibrio tras shocks de política
+    # -----------------------------------------------------------
+    G1 = G0 + shock_fiscal
+    M1 = M0 + shock_monetario
+    # Solución analítica con shocks
+    A1 = c0 - c1*T + I0 + G1 + nx0
+    B1 = nx1
+    denom = 1 - c1 + nx2
+    Z1 = 1 + R_star - (k*A1/denom - M1/P)/h
+    coef_E1 = Ee * k*B1/(denom*h)
+    E_eq1 = Ee * Z1 / (1 + coef_E1)
+    Y_eq1 = (A1 + B1 * E_eq1) / denom
+
+    # -----------------------------------------------------------
+    # 1.5. Rango para las curvas DD y AA
+    # -----------------------------------------------------------
+    Y_max = max(Y_eq0, Y_eq1, Y_obj) * 1.5 + 100
+    E_max = max(E_eq0, E_eq1, Ee) * 1.5 + 2
+    Y_range = np.linspace(0, Y_max, 200)
+    E_range = np.linspace(0, E_max, 200)
+
+    # -----------------------------------------------------------
+    # 1.6. Cálculo de las curvas DD y AA (inicial y post-shock)
+    # -----------------------------------------------------------
+    Y_dd0 = DD(E_range, G0)          # DD inicial
+    Y_dd1 = DD(E_range, G1)          # DD tras shock fiscal
+    E_aa0 = AA(Y_range, M0)          # AA inicial
+    E_aa1 = AA(Y_range, M1)          # AA tras shock monetario
+
+    # -----------------------------------------------------------
+    # 1.7. Gráfica del modelo Mundell-Fleming
+    # -----------------------------------------------------------
+    plt.figure(figsize=(8,6))
+    plt.title('Mundell-Fleming (DD-AA) Equilibrio en (300, 8)', fontsize=16, weight='bold')
+    plt.plot(Y_dd0, E_range, color='darkorange', linewidth=2, label='DD (Inicial)')
+    plt.plot(Y_range, E_aa0, color='darkviolet', linewidth=2, label='AA (Inicial)')
+    plt.plot(Y_dd1, E_range, '--', color='orange', linewidth=2, label='DD (Shock)')
+    plt.plot(Y_range, E_aa1, '--', color='purple', linewidth=2, label='AA (Shock)')
+    plt.plot(Y_eq0, E_eq0, 'ko', markersize=8, label=f'E₀ (300, 8)')
+    plt.plot(Y_eq1, E_eq1, 'ko', markersize=8, mfc='white', label=f'E₁ ({Y_eq1:.1f}, {E_eq1:.2f})')
+    plt.xlabel('Ingreso / Producción (Y)')
+    plt.ylabel('Tipo de Cambio (E)')
+    plt.xlim(left=0, right=Y_max)
+    plt.ylim(bottom=0, top=E_max)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# ------------------------------------------------------------------------------
+# SECCIÓN 2: DASHBOARD INTERACTIVO CON WIDGETS
+# ------------------------------------------------------------------------------
+def dashboard_mundell_fleming():
+    """
+    Dashboard interactivo Mundell-Fleming (DD-AA)
+    El equilibrio inicial SIEMPRE estará en (300, 8) y los shocks lo desplazan.
+    """
+    style = {'description_width': 'initial'}
+    # --- Sliders para parámetros DD (bien estructurado) ---
+    dd_widgets = {
+        'c0': widgets.FloatSlider(value=120, min=0, max=300, step=1, description='Consumo autónomo (c₀):', style=style),
+        'c1': widgets.FloatSlider(value=0.7, min=0.1, max=0.99, step=0.01, description='PMG Consumir (c₁):', style=style),
+        'T': widgets.FloatSlider(value=100, min=0, max=300, step=1, description='Impuestos (T):', style=style),
+        'I0': widgets.FloatSlider(value=180, min=0, max=300, step=1, description='Inversión autónoma (I₀):', style=style),
+        'nx0': widgets.FloatSlider(value=0, min=0, max=100, step=1, description='NX autónomo (nx₀):', style=style),
+        'nx2': widgets.FloatSlider(value=0.1, min=0.01, max=2, step=0.01, description='Sensibilidad NX a Y (nx₂):', style=style),
+        'G0': widgets.FloatSlider(value=150, min=0, max=500, step=1, description='Gasto público (G₀):', style=style)
+    }
+    # --- Sliders para parámetros AA ---
+    aa_widgets = {
+        'M0': widgets.FloatSlider(value=150, min=0, max=500, step=1, description='Oferta monetaria (M₀):', style=style),
+        'P': widgets.FloatSlider(value=1, min=0.1, max=10, step=0.01, description='Nivel de precios (P):', style=style),
+        'k': widgets.FloatSlider(value=0.6, min=0.01, max=2, step=0.01, description='S. de Ld a Y (k):', style=style),
+        'h': widgets.FloatSlider(value=12, min=1, max=50, step=0.1, description='S. de Ld a i (h):', style=style),
+        'R_star': widgets.FloatSlider(value=0.05, min=-0.5, max=0.5, step=0.01, description='Tasa internacional (R*):', style=style)
+    }
+    # --- Sliders para shocks ---
+    shock_monetario_slider = widgets.FloatSlider(
+        value=0, min=-100, max=100, step=10,
+        description='Shock Monetario (ΔM):', style=style, layout={'width': '300px'}
+    )
+    shock_fiscal_slider = widgets.FloatSlider(
+        value=0, min=-100, max=100, step=10,
+        description='Shock Fiscal (ΔG):', style=style, layout={'width': '300px'}
+    )
+
+    # --- Organización de la interfaz ---
+    all_sliders = widgets.VBox([
+        widgets.HTML('<b>Modelo DD Slicers:</b>'),
+        *dd_widgets.values(),
+        widgets.HTML('<b>Modelo AA Slicers:</b>'),
+        *aa_widgets.values(),
+        widgets.HTML('<b>Shocks de Política:</b>'),
+        shock_monetario_slider,
+        shock_fiscal_slider
+    ])
+    interactive_plot = widgets.interactive_output(
+        graficar_mundell_fleming,
+        {
+            **dd_widgets,
+            **aa_widgets,
+            'shock_monetario': shock_monetario_slider,
+            'shock_fiscal': shock_fiscal_slider
+        }
+    )
+    ui = widgets.HBox([all_sliders, interactive_plot])
+    display(ui)
+
