@@ -194,7 +194,7 @@ def crear_grafica_mercado_dinero(
     )
     # Slider para Nivel de Precios
     precio_slider = widgets.FloatSlider(
-        value=P, min=0.5, max=2, step=0.1,
+        value=P, min=1, max=2, step=0.1,
         description="Nivel de Precios (P)", layout=slider_layout, readout_format='.1f'
     )
 
