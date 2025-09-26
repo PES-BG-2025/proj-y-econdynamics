@@ -1,0 +1,97 @@
+---
+title: "Análisis de Deuda y Crecimiento"
+format: revealjs
+editor: visual
+---
+
+```{python}
+import statsmodels.api as sm
+import patsy
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+RR = pd.read_csv('RR-processed.csv')
+```
+
+```{python}
+bins = ["0-30%","30-60%","60-90%","Above 90%"]
+RR['dgcat'] = np.digitize(RR.debtgdp, [0,30,60,90,np.inf]) - 1
+RR.dgcat = [bins[x] for x in RR.dgcat]
+
+bins2 = ["0-30%","30-60%","60-90%","90-120%","Above 120%"]
+RR['dgcat2'] = np.digitize(RR.debtgdp, [0,30,60,90,120,np.inf]) - 1
+RR.dgcat2 = [bins2[x] for x in RR.dgcat2]
+```
+
+------------------------------------------------------------------------
+
+## Promedios por rango de deuda (todos los países)
+
+```{python}
+grouped = RR.groupby('dgcat').agg(
+    avg_gdp_growth=('dRGDP', 'mean'),
+    avg_inflation=('Infl', 'mean')
+).reset_index()
+grouped
+```
+
+------------------------------------------------------------------------
+
+## Gráfico: Crecimiento y Inflación según rango de deuda
+
+```{python}
+fig, ax1 = plt.subplots(figsize=(7,5))
+x = grouped['dgcat']
+y1 = grouped['avg_gdp_growth']
+y2 = grouped['avg_inflation']
+
+bars = ax1.bar(x, y1, color=['#f7fcb9', '#fee391', '#fc8d59', '#d73027'], width=0.6)
+ax1.set_ylabel('GDP Growth (%)')
+ax1.set_xlabel('Debt/GDP (%)')
+ax1.set_title('Average GDP Growth and Inflation by Debt/GDP Range')
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, color='navy', marker='o', linewidth=2, label='Average Inflation')
+ax2.set_ylabel('Inflation (%)', color='navy')
+ax2.tick_params(axis='y', labelcolor='navy')
+
+plt.tight_layout()
+plt.show()
+```
+
+------------------------------------------------------------------------
+
+## Promedios por país y rango de deuda, añadiendo rango de años
+
+```{python}
+# Calcular rango de año por país
+year_range = RR.groupby('Country').agg(
+    start_year=('Year', 'min'),
+    end_year=('Year', 'max')
+).reset_index()
+year_range['year_range'] = year_range['start_year'].astype(str) + '-' + year_range['end_year'].astype(str)
+
+# Agrupar por país y rango de deuda
+grouped_country = RR.groupby(['Country', 'dgcat']).agg(
+    avg_gdp_growth=('dRGDP', 'mean'),
+    avg_inflation=('Infl', 'mean')
+).reset_index()
+
+# Añadir rango de años
+grouped_country = pd.merge(grouped_country, year_range[['Country', 'year_range']], on='Country', how='left')
+
+# Reordenar columnas para mostrar rango de año después del país
+cols = grouped_country.columns.tolist()
+cols.insert(1, cols.pop(cols.index('year_range')))
+grouped_country = grouped_country[cols]
+
+grouped_country.head()
+```
+
+------------------------------------------------------------------------
+
+## Conclusiones
+
+-   El crecimiento económico tiende a variar según el nivel de deuda pública sobre el PIB.
+-   El rango temporal de los datos por país permite comparar trayectorias históricas.
